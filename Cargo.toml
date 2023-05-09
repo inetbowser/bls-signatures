@@ -1,11 +1,11 @@
 [package]
 name = "bls-signatures"
-version = "0.14.0"
+version = "0.15.0"
 authors = ["dignifiedquire <dignifiedquire@gmail.com>"]
 license = "MIT OR Apache-2.0"
-edition = "2018"
+edition = "2021"
 resolver = "2"
-rust-version = "1.59.0"
+rust-version = "1.69.0"
 
 description = "Aggregate BLS Signatures"
 documentation = "https://docs.rs/bls-signatures"
@@ -18,6 +18,8 @@ rayon = { version = "1", optional = true }
 rand_core = "0.6.0"
 thiserror = "1.0"
 subtle = "2.2.1"
+
+serde = { version = "1", features = ["derive"], optional = true }
 
 ff = "0.13"
 group = "0.13"
@@ -36,11 +38,16 @@ members = [
 ]
 
 [features]
-default = ["pairing", "multicore"]
-multicore = ["rayon"]
-pairing = [ "bls12_381", "sha2", "hkdf" ]
+default = ["pairing", "multicore", "blind", "musig", "serde"]
+multicore = ["dep:rayon"]
+pairing = [ "dep:bls12_381", "dep:sha2", "dep:hkdf" ]
+serde = ["dep:serde"]
+blind = []
+musig = []
+blst_lib = ["dep:blst_lib"]
+blstrs = ["dep:blstrs"]
 blst = [ "blst_lib", "blstrs" ]
-blst-portable = [ "blst_lib", "blst_lib/portable", "blstrs/portable" ]
+blst-portable = [ "dep:blst_lib", "blst_lib/portable", "blstrs/portable" ]
 
 [dev-dependencies]
 rand = "0.8"

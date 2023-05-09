@@ -63,7 +63,7 @@ impl Serialize for Signature {
     }
 }
 
-fn g2_from_slice(raw: &[u8]) -> Result<G2Affine, Error> {
+pub(crate) fn g2_from_slice(raw: &[u8]) -> Result<G2Affine, Error> {
     if raw.len() != G2_COMPRESSED_SIZE {
         return Err(Error::SizeMismatch);
     }

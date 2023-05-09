@@ -2,7 +2,7 @@ use std::io;
 
 use ff::{PrimeField, PrimeFieldBits};
 use group::Curve;
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRngCore;
 
 #[cfg(feature = "pairing")]
 use bls12_381::{hash_to_curve::HashToField, G1Affine, G1Projective, Scalar};
@@ -87,7 +87,7 @@ impl PrivateKey {
     }
 
     /// Generate a new private key.
-    pub fn generate<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
+    pub fn generate<R: CryptoRngCore>(rng: &mut R) -> Self {
         // IKM must be at least 32 bytes long:
         // https://tools.ietf.org/html/draft-irtf-cfrg-bls-signature-00#section-2.3
         let mut ikm = [0u8; 32];
@@ -245,8 +245,6 @@ fn key_gen<T: AsRef<[u8]>>(data: T) -> Scalar {
 /// https://tools.ietf.org/html/draft-irtf-cfrg-bls-signature-02#section-2.3
 #[cfg(feature = "blst")]
 fn key_gen<T: AsRef<[u8]>>(data: T) -> Scalar {
-    use std::convert::TryInto;
-
     let data = data.as_ref();
     assert!(data.len() >= 32, "IKM must be at least 32 bytes");
 
