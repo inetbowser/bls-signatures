@@ -12,6 +12,10 @@ use group::{prime::PrimeCurveAffine, Group};
 
 use crate::{hash, signature::g2_from_slice, Error, PrivateKey, PublicKey, Serialize, Signature};
 
+// TODO: Add function definitions for blst.
+#[cfg(feature = "blst")]
+compile_error!("not implemented yet for blst");
+
 impl PrivateKey {
     /// Sign the given message blindly.
     /// Calculated by `signature = bmsg * sk`
@@ -45,7 +49,13 @@ impl BlindedMessage {
         rng.try_fill_bytes(&mut bytes)
             .expect("unable to produce secure randomness");
 
-        let bfac = Scalar::from_bytes_wide(&bytes);
+        let mut bfac = Scalar::from_bytes_wide(&bytes);
+
+        while bfac.invert().is_none().into() {
+            rng.try_fill_bytes(&mut bytes)
+                .expect("unable to produce secure randomness");
+            bfac = Scalar::from_bytes_wide(&bytes);
+        }
 
         let mut p = hash(message.as_ref());
         p *= bfac;
