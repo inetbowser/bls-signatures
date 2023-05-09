@@ -27,6 +27,15 @@ mod serde {
 
     use crate::*;
 
+    impl_serialize!(
+        PublicKey,
+        PrivateKey,
+        Signature,
+        BlindSignature,
+        BlindedMessage,
+        BlindingFactor
+    );
+
     macro_rules! impl_serialize {
         ($( $x:ty ),*) => {
             $(
@@ -38,18 +47,18 @@ mod serde {
                         serializer.serialize_bytes(self.as_bytes().as_ref())
                     }
                 }
+
+                impl<'de> ::serde::Deserialize<'de> for $x {
+                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                    where
+                        D: ::serde::Deserializer<'de>
+                    {
+                        Ok(deserializer.deserialize_bytes(SerializeVisitor::<$x>(PhantomData))?)
+                    }
+                }
             )*
         };
     }
-
-    impl_serialize!(
-        PublicKey,
-        PrivateKey,
-        Signature,
-        BlindSignature,
-        BlindedMessage,
-        BlindingFactor
-    );
 
     struct SerializeVisitor<T: Serialize>(PhantomData<T>);
 
