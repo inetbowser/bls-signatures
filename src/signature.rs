@@ -21,8 +21,10 @@ use pairing_lib::MillerLoopResult as _;
 use crate::error::Error;
 use crate::key::*;
 
-const CSUITE: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
+const CSUITE: &'static str = "BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
 const G2_COMPRESSED_SIZE: usize = 96;
+
+const SIGNATURE_SUITE: &'static str = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Signature(G2Affine);
@@ -76,13 +78,31 @@ pub(crate) fn g2_from_slice(raw: &[u8]) -> Result<G2Affine, Error> {
 
 /// Hash the given message, as used in the signature.
 #[cfg(feature = "pairing")]
-pub fn hash(msg: &[u8]) -> G2Projective {
-    <G2Projective as HashToCurve<ExpandMsgXmd<sha2::Sha256>>>::hash_to_curve(msg, CSUITE)
+pub fn signature_hash(msg: &[u8]) -> G2Projective {
+    <G2Projective as HashToCurve<ExpandMsgXmd<sha2::Sha256>>>::hash_to_curve(
+        msg,
+        SIGNATURE_SUITE.as_bytes(),
+    )
 }
 
 #[cfg(feature = "blst")]
-pub fn hash(msg: &[u8]) -> G2Projective {
-    G2Projective::hash_to_curve(msg, CSUITE, &[])
+pub fn signature_hash(msg: &[u8]) -> G2Projective {
+    G2Projective::hash_to_curve(msg, SIGNATURE_SUITE.as_bytes(), &[])
+}
+
+#[cfg(feature = "pairing")]
+pub fn custom_hash(dst: &str, msg: &[u8]) -> G2Projective {
+    let final_dst = format!("{}{}", dst, CSUITE);
+    <G2Projective as HashToCurve<ExpandMsgXmd<sha2::Sha256>>>::hash_to_curve(
+        msg,
+        final_dst.as_bytes(),
+    )
+}
+
+#[cfg(feature = "blst")]
+pub fn custom_hash(dst: &[u8], msg: &[u8]) -> G2Projective {
+    let final_dst = format!("{}{}", dst, CSUITE);
+    G2Projective::hash_to_curve(msg, final_dst.as_bytes(), &[])
 }
 
 /// Aggregate signatures by multiplying them together.
@@ -200,10 +220,10 @@ pub fn verify_messages(
     public_keys: &[PublicKey],
 ) -> bool {
     #[cfg(feature = "multicore")]
-    let hashes: Vec<_> = messages.par_iter().map(|msg| hash(msg)).collect();
+    let hashes: Vec<_> = messages.par_iter().map(|msg| signature_hash(msg)).collect();
 
     #[cfg(not(feature = "multicore"))]
-    let hashes: Vec<_> = messages.iter().map(|msg| hash(msg)).collect();
+    let hashes: Vec<_> = messages.iter().map(|msg| signature_hash(msg)).collect();
 
     verify(signature, &hashes, public_keys)
 }
@@ -373,7 +393,7 @@ mod tests {
 
         let hashes = messages
             .iter()
-            .map(|message| hash(message))
+            .map(|message| signature_hash(message))
             .collect::<Vec<_>>();
         let public_keys = private_keys
             .iter()
@@ -416,7 +436,9 @@ mod tests {
         let aggregated_signature = aggregate(&sigs).expect("failed to aggregate");
 
         // check that equal messages can not be aggreagated
-        let hashes: Vec<_> = (0..num_messages).map(|_| hash(&message)).collect();
+        let hashes: Vec<_> = (0..num_messages)
+            .map(|_| signature_hash(&message))
+            .collect();
         let public_keys = private_keys
             .iter()
             .map(|pk| pk.public_key())
@@ -472,7 +494,7 @@ mod tests {
 
         let hashes = messages
             .iter()
-            .map(|message| hash(message))
+            .map(|message| signature_hash(message))
             .collect::<Vec<_>>();
         let public_keys = private_keys
             .iter()
@@ -590,7 +612,7 @@ mod tests {
                 hash_to_g2(case.msg.as_bytes(), case.ciphersuite.as_bytes())
             );
 
-            if case.ciphersuite.as_bytes() == CSUITE {
+            if case.ciphersuite.as_bytes() == SIGNATURE_SUITE.as_bytes() {
                 let pub_key =
                     PublicKey::from_bytes(&base64::decode(case.pub_key.as_ref().unwrap()).unwrap())
                         .unwrap();

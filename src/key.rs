@@ -101,7 +101,7 @@ impl PrivateKey {
     /// Calculated by `signature = hash_into_g2(message) * sk`
     #[cfg(feature = "pairing")]
     pub fn sign<T: AsRef<[u8]>>(&self, message: T) -> Signature {
-        let mut p = hash(message.as_ref());
+        let mut p = signature_hash(message.as_ref());
         p *= self.0;
 
         p.into()
@@ -111,7 +111,7 @@ impl PrivateKey {
     /// Calculated by `signature = hash_into_g2(message) * sk`
     #[cfg(feature = "blst")]
     pub fn sign<T: AsRef<[u8]>>(&self, message: T) -> Signature {
-        let p = hash(message.as_ref());
+        let p = signature_hash(message.as_ref());
         let mut sig = G2Affine::identity();
 
         unsafe {

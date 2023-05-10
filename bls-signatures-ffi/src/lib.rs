@@ -3,7 +3,7 @@ use std::slice::from_raw_parts;
 #[cfg(feature = "pairing")]
 use bls12_381::{G2Affine, G2Projective};
 use bls_signatures::{
-    aggregate as aggregate_sig, hash as hash_sig, verify as verify_sig,
+    aggregate as aggregate_sig, signature_hash as hash_sig, verify as verify_sig,
     verify_messages as verify_messages_sig, Error, PrivateKey, PublicKey, Serialize, Signature,
 };
 #[cfg(feature = "blst")]

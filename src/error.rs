@@ -16,4 +16,7 @@ pub enum Error {
     InvalidPrivateKey,
     #[error("Zero sized input")]
     ZeroSizedInput,
+    #[cfg(feature = "musig")]
+    #[error("Invalid key position")]
+    InvalidKeyPosition,
 }

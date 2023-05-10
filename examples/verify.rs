@@ -83,7 +83,7 @@ fn run(num_messages: usize) {
     measure!("hashing messages", num_messages, {
         hashes = messages
             .par_iter()
-            .map(|message| hash(message))
+            .map(|message| signature_hash(message))
             .collect::<Vec<_>>();
     });
     let public_keys: Vec<PublicKey>;

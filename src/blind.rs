@@ -10,14 +10,12 @@ use blstrs::{Bls12, G1Affine, G2Affine, G2Projective, Gt, MillerLoopResult, Scal
 #[cfg(feature = "blst")]
 use group::{prime::PrimeCurveAffine, Group};
 
-use crate::{hash, signature::g2_from_slice, Error, PrivateKey, PublicKey, Serialize, Signature};
-
-// TODO: Add function definitions for blst.
-#[cfg(feature = "blst")]
-compile_error!("not implemented yet for blst");
+use crate::{
+    signature::g2_from_slice, signature_hash, Error, PrivateKey, PublicKey, Serialize, Signature,
+};
 
 impl PrivateKey {
-    /// Sign the given message blindly.
+    /// Sign the given blinded message.
     /// Calculated by `signature = bmsg * sk`
     #[cfg(feature = "pairing")]
     pub fn blind_sign(&self, bmsg: &BlindedMessage) -> BlindSignature {
@@ -57,7 +55,7 @@ impl BlindedMessage {
             bfac = Scalar::from_bytes_wide(&bytes);
         }
 
-        let mut p = hash(message.as_ref());
+        let mut p = signature_hash(message.as_ref());
         p *= bfac;
 
         (BlindedMessage(p.into()), BlindingFactor(bfac))

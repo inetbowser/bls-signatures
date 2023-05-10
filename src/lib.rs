@@ -12,10 +12,26 @@ pub use self::blind::{BlindSignature, BlindedMessage, BlindingFactor};
 
 #[cfg(feature = "musig")]
 mod musig;
+#[cfg(feature = "musig")]
+pub use self::musig::KeyGroup;
 
 pub use self::error::Error;
 pub use self::key::{PrivateKey, PublicKey, Serialize};
-pub use self::signature::{aggregate, hash, verify, verify_messages, Signature};
+pub use self::signature::{
+    aggregate, custom_hash, signature_hash, verify, verify_messages, Signature,
+};
+
+#[cfg(feature = "pairing")]
+pub use ::bls12_381;
+#[cfg(feature = "pairing")]
+pub use ::pairing_lib;
+
+#[cfg(feature = "blst")]
+pub use ::blstrs;
+#[cfg(feature = "blst")]
+pub use ::ff;
+#[cfg(feature = "blst")]
+pub use ::group;
 
 #[cfg(test)]
 #[macro_use]
