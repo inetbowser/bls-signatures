@@ -60,7 +60,7 @@ mod serde {
                     where
                         D: ::serde::Deserializer<'de>
                     {
-                        Ok(deserializer.deserialize_bytes(SerializeVisitor::<$x>(PhantomData))?)
+                        Ok(deserializer.deserialize_any(SerializeVisitor::<$x>(PhantomData))?)
                     }
                 }
             )*
