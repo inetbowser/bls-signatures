@@ -27,7 +27,7 @@ const G2_COMPRESSED_SIZE: usize = 96;
 const SIGNATURE_SUITE: &'static str = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct Signature(G2Affine);
+pub struct Signature(pub(crate) G2Affine);
 
 impl From<G2Projective> for Signature {
     fn from(val: G2Projective) -> Self {
