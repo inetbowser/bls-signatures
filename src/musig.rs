@@ -28,6 +28,10 @@ impl KeyGroup {
         })
     }
 
+    pub fn get_key_coeff(&self, idx: usize) -> Scalar {
+        compute_key_coeff(&self.keys, &self.keys[idx])
+    }
+
     pub fn aggregated_public_key(&self) -> &PublicKey {
         &self.agg_key
     }
